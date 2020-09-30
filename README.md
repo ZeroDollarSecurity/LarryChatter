@@ -62,7 +62,7 @@ This repository contains four Python3 source files:
 P.S. - I have added comments wherever I can but the code is still messy as hell. It is even stupid perhaps and could be made better in many ways but hey, it works!
 
 ## Etymology:
-So y'all might be wondering what sort of a peculiar name is LARRYCHATTER? So have you seen the cute bird in the Twitter logo? Well it turns out her name is Larry and since this Implant communicates(chatter) over Twitter, I figured it's only appropriate I name it LARRYCHATTER.
+So you all might be wondering what sort of a peculiar name is LARRYCHATTER? So have you seen the cute bird in the Twitter logo? Well it turns out her name is Larry and since this Implant communicates(chatter) over Twitter, I figured it's only appropriate I name it LARRYCHATTER.
 
 ## Prerequisites:
 For this to work you will need:
@@ -77,7 +77,7 @@ Generate an API Token. Again, a pretty easy task.
 Clone the repository using:
 
 ```
-git clone https://github.com/slaeryan/LARRYCHATTER.git
+git clone https://github.com/ZeroDollarSecurity/LarryChatter
 ```
 
 Install the required Python dependencies on both machines.
