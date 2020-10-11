@@ -1,14 +1,14 @@
-from cryptography.fernet import Fernet
+from nacl.secret import SecretBox
+from base64 import urlsafe_b64decode as decode
 
-KEY = b'7H0RviHlSUDJ8ug1xf0lm5ZO_JZjWketfjcZ9gzaYZU='
+KEY = b'm_LAKLhu8ALI1-bufB1AfgR7kzxBrdHRaJ7KxvZm8dY='
 
-f = Fernet(KEY)
+box = SecretBox(deocode(key))
 
 with open('systeminfo.larry', 'rb') as infile:
     encrypted_text = infile.read()
 
-plaintext = f.decrypt(encrypted_text)
+plaintext = box.decrypt(encrypted_text)
 
 with open('systeminfo.txt', 'wb') as outfile:
     outfile.write(plaintext)
-
